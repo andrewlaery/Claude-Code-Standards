@@ -153,6 +153,24 @@ claude # Review the code from Terminal 1
 claude # Integrate based on feedback from Terminal 2
 ```
 
+#### Pattern A+: Sub-Agent Enhanced Parallel Verification
+```bash
+# Terminal 1: Feature Implementation
+claude
+"Use the test-specialist sub-agent to create comprehensive tests first"
+"Implement the feature following TDD workflow"
+
+# Terminal 2: Specialized Review
+claude  
+"Use the security-auditor sub-agent to review the implementation"
+"Have the code-reviewer sub-agent analyze code quality"
+
+# Terminal 3: Integration & Documentation
+claude
+"Use the refactoring-expert sub-agent to optimize the integration"
+"Have the documentation-writer sub-agent create feature documentation"
+```
+
 #### Pattern B: Git Worktrees (Official Recommendation)
 ```bash
 # Create worktrees for parallel development:
@@ -165,6 +183,26 @@ cd ../project-feature-b && claude  # Terminal 2
 
 # Clean up when done:
 git worktree remove ../project-feature-a
+```
+
+#### Pattern B+: Sub-Agent Specialized Worktrees
+```bash
+# Create worktrees with specialized focuses:
+git worktree add ../frontend-feature feature/frontend
+git worktree add ../backend-feature feature/backend  
+git worktree add ../testing-feature feature/testing
+
+# Terminal 1: Frontend with UI specialist
+cd ../frontend-feature && claude
+"Use specialized UI sub-agents for all frontend development"
+
+# Terminal 2: Backend with API specialist  
+cd ../backend-feature && claude
+"Use the security-auditor and code-reviewer sub-agents for backend development"
+
+# Terminal 3: Testing with test specialist
+cd ../testing-feature && claude
+"Use the test-specialist sub-agent to create comprehensive test coverage"
 ```
 
 #### Pattern C: Headless Automation
@@ -280,19 +318,43 @@ Update your existing Claude.md with these official patterns:
 - Bash(git commit:*) (allow git operations)
 - Web browsing for documentation
 
-## Subagent Usage
-- Use subagents for complex codebase exploration
-- Use subagents to verify implementation quality
-- Use subagents for parallel investigation tasks
+## Sub-Agent Usage (Enhanced)
+- Use sub-agents for specialized domain expertise (security, testing, documentation)
+- Leverage sub-agents for complex codebase exploration and analysis
+- Coordinate sub-agents for comprehensive quality assurance workflows
+- Delegate specific tasks to appropriate specialist sub-agents
+
+## Available Sub-Agents
+- **code-reviewer**: Comprehensive code quality analysis
+- **test-specialist**: Testing strategy, TDD implementation, debugging
+- **security-auditor**: Security vulnerability assessment and compliance
+- **refactoring-expert**: Code structure improvement and design patterns
+- **documentation-writer**: Technical documentation and API docs
+
+## Sub-Agent Coordination Patterns
+- **Quality Pipeline**: test-specialist → code-reviewer → security-auditor → documentation-writer
+- **Parallel Analysis**: Multiple sub-agents analyzing different aspects simultaneously
+- **Specialized Workflows**: Delegate entire workflows to domain-specific sub-agents
 ```
 
 ### Enhanced Commands
 Add these official patterns to your `.claude/commands/`:
 
 1. **explore-plan-code.md** - Official Anthropic workflow
-2. **tdd-workflow.md** - Test-driven development pattern
+2. **tdd-workflow.md** - Test-driven development pattern (enhanced with sub-agent integration)
 3. **visual-iteration.md** - UI development with screenshots
 4. **multi-claude-review.md** - Parallel verification workflow
+5. **code-review.md** - Enhanced with sub-agent delegation options
+6. **feature-implementation.md** - Comprehensive feature development with sub-agent coordination
+
+### Enhanced Sub-Agent Templates
+Add these specialized sub-agent configurations to your `.claude/agents/`:
+
+1. **code-reviewer.md** - Comprehensive code quality analysis specialist
+2. **test-specialist.md** - Testing, TDD, and debugging expert
+3. **security-auditor.md** - Security vulnerability assessment specialist
+4. **refactoring-expert.md** - Code structure and design pattern improvement
+5. **documentation-writer.md** - Technical documentation and API documentation specialist
 
 ## 📊 Official Performance Metrics
 
@@ -304,11 +366,21 @@ From Anthropic's internal usage:
 
 ## 🎯 Next Steps
 
-1. **Update your Claude.md** with extended thinking patterns
-2. **Implement official workflows** in your commands
-3. **Set up safe YOLO mode** with containers
-4. **Experiment with multi-Claude patterns** for complex projects
-5. **Integrate headless mode** into your CI/CD pipelines
+1. **Update your Claude.md** with extended thinking patterns and sub-agent coordination
+2. **Implement official workflows** in your commands with sub-agent integration
+3. **Set up sub-agent templates** for specialized domain expertise
+4. **Set up safe YOLO mode** with containers
+5. **Experiment with multi-Claude patterns** enhanced with sub-agent coordination
+6. **Integrate headless mode** into your CI/CD pipelines with sub-agent automation
+
+## 🤖 Sub-Agent Integration Benefits
+
+From Anthropic's official recommendations:
+- **Specialized Expertise**: Each sub-agent focuses on specific domain knowledge
+- **Context Preservation**: Main conversation stays focused while sub-agents handle detailed analysis
+- **Quality Assurance**: Multiple specialized reviews ensure comprehensive coverage
+- **Scalability**: Coordinate multiple sub-agents for complex, multi-faceted development tasks
+- **Consistency**: Reusable sub-agent configurations ensure consistent quality across projects
 
 ---
 

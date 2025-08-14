@@ -7,7 +7,34 @@ Implement a complete feature: $ARGUMENTS
 2. Consider architecture, dependencies, and integration points
 3. Identify potential challenges and edge cases
 4. Plan the testing strategy
-5. Save the implementation plan to `feature-plans/[feature-name].md`
+5. **Consider Sub-Agent Coordination**: For complex features, plan sub-agent usage:
+   - Architecture design and planning
+   - Specialized implementation areas (security, testing, documentation)
+   - Quality assurance and review phases
+6. Save the implementation plan to `feature-plans/[feature-name].md`
+
+## Sub-Agent Coordination Strategy
+
+### Complex Feature Development Pattern
+For substantial features, consider a coordinated sub-agent approach:
+
+```markdown
+# Phase 1: Architecture & Design
+"Have the refactoring-expert sub-agent review the existing architecture for $ARGUMENTS integration"
+
+# Phase 2: Security Planning
+"Use the security-auditor sub-agent to identify security considerations for $ARGUMENTS"
+
+# Phase 3: Test Strategy
+"Ask the test-specialist sub-agent to design a comprehensive testing strategy for $ARGUMENTS"
+
+# Phase 4: Implementation
+Main context implements with sub-agent consultation as needed
+
+# Phase 5: Quality Assurance
+"Use the code-reviewer sub-agent for final quality assessment"
+"Have the documentation-writer sub-agent create feature documentation"
+```
 
 ## Implementation Process
 1. Create and checkout feature branch: `feature-[feature-name]`

@@ -11,13 +11,23 @@ Examples of excellent code that you should match the design/style/conventions of
 ## Process
 1. **First**: Read the example files above to understand our design patterns
 2. **Second**: Analyze $ARGUMENTS against these standards
-3. **Third**: Create detailed critique covering:
+3. **Consider Sub-Agent Delegation**: For complex reviews, consider using specialized sub-agents:
+   - Use `code-reviewer` sub-agent for comprehensive quality analysis
+   - Use `security-auditor` sub-agent for security-focused review
+   - Use `refactoring-expert` sub-agent for structural improvement suggestions
+4. **Third**: Create detailed critique covering:
    - Code structure and organization
    - Adherence to established patterns
    - Performance considerations
    - Security implications
    - Maintainability concerns
    - Test coverage gaps
+
+## Sub-Agent Integration Options
+- **Standard Review**: Use main context for straightforward code review
+- **Comprehensive Analysis**: `"Use the code-reviewer sub-agent to analyze $ARGUMENTS"`
+- **Security Focus**: `"Have the security-auditor sub-agent review $ARGUMENTS for vulnerabilities"`
+- **Refactoring Suggestions**: `"Ask the refactoring-expert sub-agent to improve $ARGUMENTS structure"`
 
 ## Output Requirements
 - Save review as `ai-code-reviews/{filename}.review.md` for each file reviewed

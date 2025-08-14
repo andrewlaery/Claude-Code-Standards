@@ -63,10 +63,25 @@ This is Anthropic's favorite workflow for changes that are easily verifiable wit
    - Focus on one failing test at a time
    - Refactor only after tests are passing
 
-3. **Use Subagents for Verification**:
-   - Use independent subagents to verify implementation quality
-   - Have subagents check that implementation isn't overfitting to tests
+3. **Use Sub-Agents for Verification**:
+   - Use `test-specialist` sub-agent to verify test quality and coverage
+   - Use `code-reviewer` sub-agent to verify implementation quality
+   - Have sub-agents check that implementation isn't overfitting to tests
    - Ensure the solution solves the general problem, not just the test cases
+
+## Sub-Agent Integration Points
+
+### Phase 1: Test Creation
+- **Test-Specialist Sub-Agent**: `"Use the test-specialist sub-agent to create comprehensive tests for $ARGUMENTS"`
+- **Coverage Analysis**: `"Have the test-specialist sub-agent analyze test coverage gaps"`
+
+### Phase 4: Implementation Verification  
+- **Code Quality**: `"Use the code-reviewer sub-agent to verify implementation quality"`
+- **Security Review**: `"Have the security-auditor sub-agent review security aspects of $ARGUMENTS"`
+
+### Phase 5: Final Review
+- **Comprehensive Analysis**: `"Ask the test-specialist sub-agent to verify final test suite quality"`
+- **Refactoring Opportunities**: `"Use the refactoring-expert sub-agent to identify improvement opportunities"`
 
 ## Phase 5: Verify and Refine
 **Ensure implementation is robust and maintainable**
