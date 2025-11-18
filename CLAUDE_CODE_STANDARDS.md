@@ -30,6 +30,45 @@
 - Always provide sufficient context for the specific task at hand
 - Balance specificity with creative freedom
 
+### 4. Rigorous Quality Enforcement
+
+The implementation must strictly adhere to these **non-negotiable principles**:
+
+#### DRY (Don't Repeat Yourself)
+- **Zero code duplication will be tolerated**
+- Each functionality must exist in exactly one place
+- No duplicate files or alternative implementations allowed
+- Consolidate similar patterns into reusable components
+
+#### KISS (Keep It Simple, Stupid)
+- **Implement the simplest solution that works**
+- No over-engineering or unnecessary complexity
+- Straightforward, maintainable code patterns
+- Resist feature creep and scope expansion
+
+#### Clean File System
+- **All existing files must be either used or removed**
+- No orphaned, redundant, or unused files
+- Clear, logical organization of the file structure
+- Regular cleanup of deprecated or unused components
+
+#### Transparent Error Handling
+- **No error hiding or fallback mechanisms that mask issues**
+- All errors must be properly displayed to the user
+- Errors must be clear, actionable, and honest
+- No silent failures or suppressed exceptions
+
+### 5. Measurable Success Criteria
+
+Implementation will be successful **only if**:
+- **Zero Duplication**: No duplicate code or files exist in the codebase
+- **Single Implementation**: Each feature has exactly one implementation
+- **Complete Functionality**: All features work correctly and completely
+- **Transparent Operations**: All errors are properly displayed to users
+- **Clean Architecture**: Modular, reusable component structure
+- **Consistent Standards**: Implementation follows all established guidelines
+- **Full Documentation**: Implementation details are properly documented
+
 ## Big Prompt Engineering
 
 ### The 1000X Approach
@@ -440,6 +479,100 @@ src/
 - Hooks: `/src/hooks/use[HookName].ts`
 ```
 
+## Context Management and Session Continuity
+
+### Proactive Context Management Framework
+AI development tools have limited context retention and require structured approaches to maintain project continuity:
+
+#### Project Manifest System
+Maintain a comprehensive project manifest to preserve context across sessions:
+
+```markdown
+# PROJECT_MANIFEST.md Template
+
+## Project Overview
+- **Project Name**: [Name]
+- **Current Status**: [Development phase and progress]
+- **Last Session Date**: [Date]
+- **Current Objective**: [Immediate goal]
+
+## Architecture Status
+- **System Design**: [Current architectural decisions]
+- **Database Schema**: [Current state and recent changes]
+- **API Structure**: [Endpoints and recent modifications]
+- **Component Architecture**: [UI/Component organization]
+
+## Implementation Tracking
+- **Completed Features**: [List with implementation notes]
+- **In Progress**: [Current work with status details]
+- **Known Issues**: [Documented problems and workarounds]
+- **Testing Status**: [Test coverage and quality metrics]
+
+## Context Restoration
+- **Key Files**: [Primary files for context restoration]
+- **Recent Changes**: [Summary of recent modifications]
+- **Dependencies**: [External dependencies and versions]
+- **Environment**: [Development environment specifics]
+```
+
+#### Session Restoration Protocol
+Use explicit templates for effective session restoration:
+
+```markdown
+# Session Restoration Template
+"I'm continuing work on [PROJECT_NAME]. Here's the current context:
+
+## Project Status
+[Paste PROJECT_MANIFEST.md content]
+
+## Recent Work
+[Paste recent commit messages or work summary]
+
+## Current Objective
+[Specific goal for this session]
+
+## Context Files
+[Attach or reference key project files]
+
+Please review this context and confirm your understanding before we continue."
+```
+
+#### Context Preservation Techniques
+- **Context Markers**: Use `[CONTEXT:START]` and `[CONTEXT:END]` in code comments
+- **Implementation Status**: Document current development stage in comments
+- **Decision Log**: Maintain record of architectural decisions and rationale
+- **Checkpoint Documentation**: Save context at logical completion points
+
+### Strategic Communication Patterns
+Establish clear command signals for effective AI collaboration:
+
+#### Command Signal System
+```markdown
+# Development Command Signals
+[IMPLEMENT] - Begin implementation of specified feature
+[REVIEW] - Conduct comprehensive code review
+[DEBUG] - Investigate and resolve specific issue
+[TEST] - Create or execute testing procedures
+[DOCUMENT] - Generate or update documentation
+[CHECKPOINT] - Pause for review and validation
+[RESTORE] - Restore context from project manifest
+```
+
+#### Checkpoint Mechanisms
+Structured pause and review cycles at key development points:
+
+```markdown
+# Checkpoint Strategy - Pause after:
+- Architecture design completion
+- Core functionality implementation
+- Database schema changes
+- API endpoint creation
+- UI component development
+- Integration testing completion
+- Security implementation
+- Performance optimization
+```
+
 ## Feedback and Iteration
 
 ### Being Claude's Hands, Eyes, and Ears
@@ -449,6 +582,7 @@ When Claude Code cannot automatically test something:
 2. **Provide Specificity**: "Clicking add expense creates this error: [error text]"
 3. **Close the Loop**: Give Claude the feedback it needs to fix issues
 4. **Minimize Manual Testing**: Build automated testing where possible
+5. **Use Command Signals**: Apply [DEBUG] or [REVIEW] signals for structured feedback
 
 ### Self-Checking Requirements
 Include in Claude.md:
@@ -830,6 +964,15 @@ Please help me integrate these features:
 - [ ] Leverage intelligent routing to appropriate specialists based on task characteristics
 - [ ] Establish workflow orchestration for complex, multi-domain features
 - [ ] Create quality assurance pipelines with continuous specialist validation
+
+### Advanced Community Tools and Integrations
+- [ ] **Claude Squad**: Multi-workspace agent management for complex projects
+- [ ] **Claude Code Flow**: Autonomous code writing and optimization layer
+- [ ] **CC Usage**: CLI tool for analyzing Claude Code usage patterns and optimization
+- [ ] **Aider AI**: Terminal-based AI pair programming with Git integration
+- [ ] **Cursor/Windsurf IDE**: AI-enhanced development environments with context management
+- [ ] **Context7 MCP Server**: Advanced documentation and library integration
+- [ ] **Nix Configuration**: Declarative Claude Code environment management
 
 ---
 
