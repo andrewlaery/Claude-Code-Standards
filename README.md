@@ -6,7 +6,9 @@ A comprehensive reference guide for effective Claude Code usage in software deve
 
 This repository contains a complete set of standards, best practices, and reference materials for using Claude Code as an AI agent in software development. These standards are based on proven methodologies for treating AI as labor rather than just a coding assistant.
 
-**🆕 Now includes [Official Anthropic Best Practices](ANTHROPIC_BEST_PRACTICES.md)** - Direct insights from Anthropic's engineering teams and internal workflows.
+**🆕 Updated for Claude Sonnet 4.5 (September 2025)** - Now includes sandboxing, web interface, and the latest Anthropic engineering best practices.
+
+**Powered by Claude Sonnet 4.5**: State-of-the-art coding model with 30+ hours of autonomous work, 0% code editing errors, and hybrid reasoning capabilities.
 
 ## 🎯 Core Philosophy
 
@@ -28,12 +30,14 @@ The comprehensive reference covering:
 - Feedback and iteration processes
 - Advanced techniques
 
-### [🏢 Official Anthropic Best Practices](ANTHROPIC_BEST_PRACTICES.md) **NEW!**
+### [🏢 Official Anthropic Best Practices](ANTHROPIC_BEST_PRACTICES.md) **UPDATED 2025!**
 Direct insights from Anthropic's engineering teams:
 - Official workflow patterns (Explore-Plan-Code-Commit)
-- Extended thinking integration ("think" → "think hard" → "ultrathink")
+- Extended thinking with specific token budgets (4K to 32K tokens)
 - Multi-Claude workflows and git worktrees
-- Safe YOLO mode with containers
+- **NEW**: Sandboxing with 84% fewer permission prompts
+- **NEW**: Web interface for zero-setup development
+- **NEW**: VS Code extension (beta)
 - Advanced CLAUDE.md management
 - Production automation patterns
 
@@ -83,8 +87,11 @@ Instead of 5-10X improvements from small prompts, these standards help you achie
 ### Official Anthropic Patterns
 - **Explore-Plan-Code-Commit**: Official workflow for complex features
 - **Test-Driven Development**: Anthropic's favorite pattern for verifiable changes
-- **Extended Thinking**: "think" < "think hard" < "think harder" < "ultrathink"
+- **Extended Thinking**: "think" (4K) < "think hard" (10K) < "ultrathink" (32K tokens)
+- **Hybrid Reasoning**: Instant responses or deep thinking with visible reasoning
 - **Multi-Claude Workflows**: Parallel development with git worktrees
+- **Sandboxed Execution**: Filesystem and network isolation for safety (October 2025)
+- **Web Interface**: Zero-setup browser-based development (October 2025)
 
 ### Best-of-N Pattern
 Leverage AI's speed to explore multiple solutions:
@@ -149,11 +156,13 @@ CORE FEATURES:
 
 ### Extended Thinking Integration
 ```bash
-# Use official thinking levels:
-"think about the best approach for OAuth implementation"
-"think hard about potential security vulnerabilities"  
-"think harder about edge cases we should handle"
-"ultrathink about the architectural implications"
+# Use official thinking levels with specific token budgets:
+"think about the best approach for OAuth implementation"      # 4,000 tokens
+"think hard about potential security vulnerabilities"         # 10,000 tokens
+"ultrathink about the architectural implications"             # 31,999 tokens
+
+# For maximum reasoning on critical decisions:
+"use extended thinking with 64,000 token budget for this architectural decision"
 ```
 
 ## 📋 Quality Standards
@@ -173,11 +182,20 @@ CORE FEATURES:
 - 📝 Document processes for repeatability
 - 🏢 Follow official Anthropic workflow patterns
 
-## 🆕 What's New
+## 🆕 What's New (2025)
 
-### Recent Additions
+### Latest Updates (November 2025)
+- **Claude Sonnet 4.5**: 30+ hours autonomous work, 0% code editing errors, state-of-the-art on SWE-bench
+- **Sandboxing**: Filesystem and network isolation, 84% fewer permission prompts (October 2025)
+- **Web Interface**: Zero-setup browser-based development with cloud execution (October 2025)
+- **VS Code Extension**: Native IDE experience (beta)
+- **MCP Code Execution**: Efficient token usage, industry-wide adoption
+- **Extended Thinking Budgets**: 4K to 64K token ranges, hybrid reasoning model
+- **Multi-Agent Architecture**: Official Anthropic patterns with 90.2% improvement
+
+### 2024-2025 Foundations
 - **Official Anthropic Best Practices**: Direct insights from Anthropic engineering teams
-- **Extended Thinking Patterns**: Official thinking level mappings
+- **Extended Thinking Patterns**: Official thinking level mappings with token budgets
 - **Workflow Commands**: Explore-Plan-Code-Commit and TDD patterns
 - **Multi-Claude Strategies**: Git worktrees and parallel development
 - **Production Integration**: Headless mode and CI/CD patterns
@@ -204,10 +222,13 @@ MIT License - feel free to use and adapt for your projects.
 
 ## 🔗 Related Resources
 
-- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Claude Code Documentation](https://code.claude.com/docs)
+- [Claude Code Sandboxing](https://www.anthropic.com/engineering/claude-code-sandboxing)
+- [Claude Code on the Web](https://www.anthropic.com/news/claude-code-on-the-web)
+- [Official Anthropic Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
 - [Anthropic API Documentation](https://docs.anthropic.com)
 - [Prompt Engineering Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)
-- [Official Anthropic Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
+- [Claude Sonnet 4.5 Announcement](https://www.anthropic.com/news/claude-sonnet-4-5)
 
 ## ⭐ Acknowledgments
 

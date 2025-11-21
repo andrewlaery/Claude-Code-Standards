@@ -1,5 +1,25 @@
 # Project: [YOUR_PROJECT_NAME]
 
+## AI Development with Claude Sonnet 4.5
+This project leverages Claude Sonnet 4.5 (September 2025) for AI-assisted development:
+
+### Extended Thinking Capabilities
+- **"think" (4K tokens)**: Standard architectural planning, code reviews
+- **"think hard" (10K tokens)**: Security analysis, complex debugging
+- **"ultrathink" (32K tokens)**: Critical migrations, major architectural decisions
+- **Hybrid reasoning**: Instant responses or deep thinking with visible reasoning
+
+### Development Approaches
+- **Multi-agent architecture**: Coordinate specialized agents for complex features (90.2% improvement potential)
+- **Test-driven development**: Write tests first, use sub-agents for verification
+- **Sandboxed execution**: 84% fewer permission prompts with filesystem/network isolation
+- **Web/CLI/IDE flexibility**: Available via terminal, VS Code extension, or web browser
+
+### Quality Enforcement
+- Leverage sub-agents for specialized review: code-reviewer, test-specialist, security-auditor
+- Use extended thinking for architectural decisions and security reviews
+- Apply Best-of-N pattern for complex features: explore multiple solutions
+
 ## Core Principles
 **IMPORTANT**: Whenever you write code, it MUST follow SOLID design principles. Never write code that violates these principles. If you do, you will be asked to refactor it.
 

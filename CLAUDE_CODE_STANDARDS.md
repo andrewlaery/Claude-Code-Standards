@@ -598,19 +598,36 @@ Before completing any task:
 ```
 
 ### Think First, Code Second
-For complex features, use extended thinking:
+For complex features, use extended thinking with Claude Sonnet 4.5's hybrid reasoning model:
 
 ```markdown
-# Thinking Levels:
-- "think" - Basic analysis
-- "think hard" - Deeper evaluation  
-- "think harder" - Comprehensive analysis
-- "ultrathink" - Maximum thinking budget
+# Thinking Levels (with specific token budgets):
+- "think" - Basic analysis (4,000 tokens)
+- "think hard" / "megathink" - Deeper evaluation (10,000 tokens)
+- "ultrathink" - Maximum thinking budget (31,999 tokens)
+- Extended thinking can use up to 64,000 tokens for critical architectural decisions
+- With interleaved thinking (beta), full 200K context window available
+
+# Hybrid Reasoning Model (Claude Sonnet 4.5):
+- Instant responses for straightforward tasks
+- Extended thinking with visible reasoning for complex problems
+- System automatically summarizes thinking process in API responses
+- Visible thinking blocks show actual internal reasoning, not summaries
+
+# When to Use Each Level:
+- **think (4K)**: Standard architectural planning, code reviews, simple refactoring
+- **think hard (10K)**: Security analysis, performance optimization, complex debugging
+- **ultrathink (32K)**: Critical migrations, systemic problem resolution, new pattern design
+- **64K budget**: Major architectural overhauls, framework migrations, system-wide refactoring
 
 # Example:
-Think hard about implementing a machine learning expense categorization system. 
-Analyze the technical challenges, data requirements, ML approaches, privacy concerns, 
+Think hard about implementing a machine learning expense categorization system.
+Analyze the technical challenges, data requirements, ML approaches, privacy concerns,
 user experience, edge cases, and deployment strategy. Save the plan to development_plan.txt
+
+# Cost Considerations:
+Ultrathink generates disproportionate costs - reserve for major architectural challenges only.
+For most tasks, "think" (4K) or "think hard" (10K) provides optimal balance of quality and cost.
 ```
 
 ## Advanced Techniques
@@ -882,6 +899,248 @@ Standard Tasks:
 Simple Tasks:
 - Main context with specialist consultation as needed
 - Minimal sub-agent activation to avoid overhead
+```
+
+### Multi-Agent Architecture (Official Anthropic Patterns)
+
+Based on Anthropic's research and production implementations, multi-agent systems significantly outperform single-agent approaches for complex tasks.
+
+#### Performance Benchmarks
+```markdown
+# Anthropic Internal Research:
+- Multi-agent system (Opus 4 orchestrator + Sonnet 4 workers) vs single-agent Opus 4
+- Result: 90.2% improvement on internal research evaluation
+- Key insight: Separation of concerns enables thorough, independent investigations
+
+# Architecture Patterns:
+- **Orchestrator-Worker**: Lead agent (Opus 4) coordinates specialized workers (Sonnet 4)
+- **Wave-Based Generation**: Deploy agents in strategic batches to manage context limits
+- **Hierarchical Multi-Tier**: Strategic orchestrator → Domain coordinators → Task specialists
+```
+
+#### Implementation Patterns
+```markdown
+# Simple Queries (2-3 sub-agents):
+/workflow "Add user login feature"
+→ Security-auditor + Test-specialist + Code-reviewer
+
+# Comprehensive Projects (20-30 agents in waves):
+"Implement complete e-commerce checkout system"
+→ Wave 1: Architecture-specialist, Security-auditor, Database-expert
+→ Wave 2: Frontend-specialist, Backend-specialist, API-expert
+→ Wave 3: Test-specialist, Performance-expert, Documentation-writer
+→ Wave 4: Integration-specialist, QA-auditor, Deployment-expert
+
+# Benefits:
+- Each agent has separate context window (no context pollution)
+- Parallel processing of independent concerns
+- Specialized expertise for each domain
+- Reduced path dependency through independent analysis
+```
+
+#### Orchestration Best Practices
+```markdown
+# Strategic Coordination:
+1. **Orchestrator Agent** maintains big picture, sets objectives, allocates resources
+2. **Coordinator Agents** manage specific domains (research, analysis, implementation)
+3. **Worker Agents** execute focused tasks with specialized expertise
+
+# Context Management:
+- Simple queries: 2-3 subagents with minimal coordination overhead
+- Complex features: 10-15 agents in 2-3 waves
+- Large-scale projects: 20-30 agents in 4-5 coordinated waves
+
+# Performance Considerations:
+- Each subagent starts with clean context (slight latency)
+- Use for substantial tasks to justify initialization cost
+- Monitor context window usage across agent network
+- Consider wave-based deployment for managing context limits
+```
+
+### Sandboxing and Security (October 2025)
+
+Claude Code introduced filesystem and network isolation features that dramatically improve safety while reducing permission friction.
+
+#### Sandbox Features
+```markdown
+# Two Security Boundaries:
+1. **Filesystem Isolation**: Claude can only access/modify specific directories
+2. **Network Isolation**: Claude can only connect to approved servers
+
+# Performance Impact:
+- 84% reduction in permission prompts (Anthropic internal usage)
+- Same security guarantees across CLI, web, and mobile interfaces
+- No performance degradation for normal operations
+
+# Technical Implementation:
+- Built on OS-level primitives: Linux bubblewrap, MacOS seatbelt
+- Open source implementation available from Anthropic
+- Network proxy enforces domain restrictions outside sandbox
+- Both boundaries required for complete security
+```
+
+#### Safe YOLO Mode with Sandboxing
+```markdown
+# Updated YOLO Mode Best Practices (2025):
+- Primary safety: Sandboxing, not containers
+- --dangerously-skip-permissions flag now safer with sandbox isolation
+- Filesystem boundaries prevent accidental system modifications
+- Network boundaries prevent data exfiltration and malware downloads
+
+# Container Workflows (Still Recommended):
+- Dev containers for additional isolation layer
+- Docker-based claude-yolo wrappers for production safety
+- VM isolation for maximum security in critical environments
+
+# AllowedTools Configuration:
+- Whitelist specific safe tools in config (search, tests)
+- Prevents dangerous commands even with all permissions bypassed
+- Ideal for CI/CD and automated workflows
+
+# Security Vulnerabilities:
+- CVE-2025-54794 and CVE-2025-54795 patched
+- Update to v0.2.111 (CLI) or v1.0.20 (latest) for security fixes
+- Sandboxing prevents exploit impact even if vulnerabilities exist
+```
+
+#### Sandbox Configuration
+```markdown
+# Filesystem Boundaries:
+- Restrict Claude to project directory: --sandbox-root /path/to/project
+- Prevent access to sensitive directories (~/.ssh, ~/.aws, etc.)
+- Explicit permission required for new directory access
+
+# Network Boundaries:
+- Approve domains through proxy service
+- Block by default, allow on confirmation
+- Persistent allow-list for trusted domains
+- Prevents prompt injection exfiltration attacks
+```
+
+### Web Interface and Deployment Options (October 2025)
+
+Claude Code is now available beyond the CLI, enabling zero-setup development and team collaboration.
+
+#### Claude Code on the Web
+```markdown
+# Features (Beta - Pro & Max users):
+- Zero-setup browser-based development
+- Cloud execution in isolated sandbox environments
+- GitHub repository integration
+- Parallel session support for multiple tasks
+- Real-time progress monitoring
+- Mobile access via iOS app
+
+# Use Cases:
+- Development from any device without local setup
+- Team collaboration through URL sharing
+- Quick prototyping without environment configuration
+- Remote development on Anthropic-managed infrastructure
+- Mobile coding and reviews on iOS devices
+
+# Security:
+- Every task runs in isolated sandbox (same as CLI)
+- Git interactions through secure proxy service
+- Filesystem and network isolation enforced
+- Available for Claude Pro ($20/month) and Max ($100-200/month) users
+```
+
+#### VS Code Extension (Beta)
+```markdown
+# Native IDE Integration:
+- Easy-to-use graphical interface
+- No terminal familiarity required
+- Available from VS Code marketplace
+- Seamless integration with existing workflows
+- Full Claude Code capabilities in familiar IDE
+
+# Benefits:
+- Lower barrier to entry for non-terminal users
+- Native debugging and editor integration
+- Side-by-side code comparison
+- Integrated git workflows
+```
+
+#### Deployment Matrix
+```markdown
+# Choose Your Interface:
+1. **CLI (Terminal)**: Maximum control, Unix philosophy, power users
+2. **VS Code Extension**: Native IDE experience, visual workflows
+3. **Web Interface**: Zero setup, cross-device, mobile access
+4. **MCP Server Mode**: Remote invocation from other tools
+
+# All interfaces provide:
+- Same Claude Sonnet 4.5 model capabilities
+- Sandboxing with filesystem/network isolation
+- Extended thinking and hybrid reasoning
+- Sub-agent coordination and specialized workflows
+```
+
+### Model Context Protocol (MCP) Updates (2025)
+
+MCP has evolved from Anthropic innovation to industry-wide standard with major ecosystem growth.
+
+#### Industry Adoption
+```markdown
+# Major Platform Support:
+- **OpenAI** (March 2025): MCP support across ChatGPT
+- **Google** (April 2025): Gemini MCP integration
+- **Development Tools**: Block, Apollo, Zed, Replit, Codeium, Sourcegraph
+- **Community**: Thousands of MCP servers built since November 2024
+- **SDKs**: Available for all major programming languages
+
+# Impact:
+- De facto standard for connecting agents to tools and data
+- Unified protocol across AI platforms and development tools
+- Massive community-driven server ecosystem
+```
+
+#### Code Execution with MCP
+```markdown
+# Efficiency Improvements:
+- Agents can interact with MCP servers more efficiently
+- Reduced token usage through code execution
+- Handle more tools without context window bloat
+- Intermediate results don't pass through context window
+
+# Technical Benefits:
+- Execute code to interact with tools (vs loading all definitions)
+- Scale to hundreds of connected tools
+- Lower latency and reduced costs
+- More efficient multi-tool workflows
+```
+
+#### Claude Code as MCP Server
+```markdown
+# Dual Server/Client Capability:
+claude mcp serve
+
+# Features:
+- Exposes Claude Code's file editing and command execution via MCP
+- Other MCP clients (Claude Desktop, Cursor, Windsurf) can invoke remotely
+- Enables Claude Code as a service for other AI tools
+- Remote automation and integration capabilities
+
+# Popular MCP Integrations:
+- Stripe, Figma, GitHub, PostgreSQL, Sentry
+- Asana, Atlassian, Google Drive, Slack
+- Context7 for documentation integration
+- Custom MCP servers for project-specific tools
+```
+
+#### MCP Best Practices
+```markdown
+# Integration Strategy:
+1. Start with high-value integrations (GitHub, databases, monitoring)
+2. Use official MCP servers when available
+3. Build custom servers for project-specific tools
+4. Configure permissions carefully in .claude/settings.local.json
+
+# Performance Considerations:
+- Code execution reduces token usage significantly
+- Batch operations when possible for efficiency
+- Monitor context window with many connected tools
+- Use MCP server mode for remote automation
 ```
 
 ### In-Context Learning
