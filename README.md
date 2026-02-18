@@ -6,9 +6,9 @@ A comprehensive reference guide for effective Claude Code usage in software deve
 
 This repository contains a complete set of standards, best practices, and reference materials for using Claude Code as an AI agent in software development. These standards are based on proven methodologies for treating AI as labor rather than just a coding assistant.
 
-**🆕 Updated for Claude Sonnet 4.5 (September 2025)** - Now includes sandboxing, web interface, and the latest Anthropic engineering best practices.
+**🆕 Updated for Opus 4.6 and Sonnet 4.6 (February 2026)** - Now includes Agent Teams, Skills, Hooks, adaptive reasoning, and the latest Anthropic engineering best practices.
 
-**Powered by Claude Sonnet 4.5**: State-of-the-art coding model with 30+ hours of autonomous work, 0% code editing errors, and hybrid reasoning capabilities.
+**Powered by Claude Opus 4.6 and Sonnet 4.6**: Current-generation models with SWE-bench Verified scores of 80.8% and 79.6%, adaptive reasoning, 128K output tokens, and 1M context window (beta).
 
 ## 🎯 Core Philosophy
 
@@ -87,8 +87,8 @@ Instead of 5-10X improvements from small prompts, these standards help you achie
 ### Official Anthropic Patterns
 - **Explore-Plan-Code-Commit**: Official workflow for complex features
 - **Test-Driven Development**: Anthropic's favorite pattern for verifiable changes
-- **Extended Thinking**: "think" (4K) < "think hard" (10K) < "ultrathink" (32K tokens)
-- **Hybrid Reasoning**: Instant responses or deep thinking with visible reasoning
+- **Adaptive Reasoning**: Effort levels (low/medium/high/max) replace fixed token budgets on 4.6 models
+- **Interleaved Thinking**: Reasoning between tool calls, auto-enabled in adaptive mode
 - **Multi-Claude Workflows**: Parallel development with git worktrees
 - **Sandboxed Execution**: Filesystem and network isolation for safety (October 2025)
 - **Web Interface**: Zero-setup browser-based development (October 2025)
@@ -113,12 +113,18 @@ Balance specificity with creative freedom:
 your-project/
 ├── CLAUDE.md                    # Global AI context
 ├── .claude/
-│   └── commands/               # Reusable AI commands
-│       ├── code-review.md
-│       ├── explore-plan-code-commit.md  # NEW: Official pattern
-│       ├── tdd-workflow.md              # NEW: Official TDD pattern
-│       ├── feature-implementation.md
-│       └── integration.md
+│   ├── commands/               # Legacy reusable commands (superseded by skills)
+│   │   ├── code-review.md
+│   │   └── tdd-workflow.md
+│   ├── skills/                 # Skills system (February 2026)
+│   │   └── my-skill/
+│   │       └── SKILL.md
+│   ├── rules/                  # Modular project rules
+│   │   ├── code-style.md
+│   │   └── api-conventions.md
+│   ├── agents/                 # Sub-agent definitions
+│   │   └── code-reviewer.md
+│   └── settings.json           # Project settings
 ├── src/
 │   ├── components/            # Clear, standard naming
 │   ├── utils/
@@ -154,15 +160,16 @@ CORE FEATURES:
 /integrate-parallel-work budget-tracking notifications
 ```
 
-### Extended Thinking Integration
+### Adaptive Reasoning (Opus 4.6 / Sonnet 4.6)
 ```bash
-# Use official thinking levels with specific token budgets:
-"think about the best approach for OAuth implementation"      # 4,000 tokens
-"think hard about potential security vulnerabilities"         # 10,000 tokens
-"ultrathink about the architectural implications"             # 31,999 tokens
+# Configure effort level for reasoning depth:
+# CLAUDE_CODE_EFFORT_LEVEL=low    — quick lookups, simple tasks
+# CLAUDE_CODE_EFFORT_LEVEL=medium — routine reviews, moderate debugging
+# CLAUDE_CODE_EFFORT_LEVEL=high   — complex architecture, security analysis (default)
+# CLAUDE_CODE_EFFORT_LEVEL=max    — critical migrations (Opus 4.6 only)
 
-# For maximum reasoning on critical decisions:
-"use extended thinking with 64,000 token budget for this architectural decision"
+# Toggle thinking: Option+T (macOS) / Alt+T (Windows/Linux)
+# Keywords like "think hard" are regular prompt instructions, not token controls
 ```
 
 ## 📋 Quality Standards
@@ -182,23 +189,29 @@ CORE FEATURES:
 - 📝 Document processes for repeatability
 - 🏢 Follow official Anthropic workflow patterns
 
-## 🆕 What's New (2025)
+## 🆕 What's New (2026)
 
-### Latest Updates (November 2025)
-- **Claude Sonnet 4.5**: 30+ hours autonomous work, 0% code editing errors, state-of-the-art on SWE-bench
-- **Sandboxing**: Filesystem and network isolation, 84% fewer permission prompts (October 2025)
-- **Web Interface**: Zero-setup browser-based development with cloud execution (October 2025)
-- **VS Code Extension**: Native IDE experience (beta)
-- **MCP Code Execution**: Efficient token usage, industry-wide adoption
-- **Extended Thinking Budgets**: 4K to 64K token ranges, hybrid reasoning model
-- **Multi-Agent Architecture**: Official Anthropic patterns with 90.2% improvement
+### Latest Updates (February 2026)
+- **Opus 4.6 + Sonnet 4.6**: Current-generation models (SWE-bench 80.8%/79.6%, OSWorld 72.7%/72.5%)
+- **Adaptive Reasoning**: Effort levels (low/medium/high/max) replace fixed token budgets
+- **Agent Teams**: Native multi-agent orchestration with shared tasks and messaging (research preview)
+- **Skills System**: `.claude/skills/` with YAML frontmatter, hot-reload, forked context
+- **Hooks System**: Deterministic lifecycle event handlers (SessionStart, PreToolUse, Stop, etc.)
+- **Plugins Marketplace**: Bundles of skills, hooks, subagents, and MCP servers
+- **Auto Memory**: Persistent per-project memory, compaction for infinite conversations
+- **Plan Mode**: Read-only exploration with `Shift+Tab` toggle
+- **Desktop App**: Standalone app for macOS and Windows
+- **Chrome Extension**: Browser automation and UI testing
+- **MCP Apps**: Interactive UI rendering in chat (Jan 2026, with Figma, Slack, Canva, etc.)
+- **Opus 4.6 pricing**: $5/$25 per MTok (67% cheaper than legacy Opus 4)
 
-### 2024-2025 Foundations
-- **Official Anthropic Best Practices**: Direct insights from Anthropic engineering teams
-- **Extended Thinking Patterns**: Official thinking level mappings with token budgets
-- **Workflow Commands**: Explore-Plan-Code-Commit and TDD patterns
+### 2025 Foundations
+- **Sandboxing**: Filesystem and network isolation, 84% fewer permission prompts
+- **Web Interface**: Zero-setup browser-based development with cloud execution
+- **VS Code Extension**: Native IDE experience
+- **Official Anthropic Best Practices**: Explore-Plan-Code-Commit, TDD patterns
 - **Multi-Claude Strategies**: Git worktrees and parallel development
-- **Production Integration**: Headless mode and CI/CD patterns
+- **Production Integration**: Headless mode, CI/CD patterns, GitHub Actions
 
 ## 🤝 Contributing
 
@@ -225,10 +238,11 @@ MIT License - feel free to use and adapt for your projects.
 - [Claude Code Documentation](https://code.claude.com/docs)
 - [Claude Code Sandboxing](https://www.anthropic.com/engineering/claude-code-sandboxing)
 - [Claude Code on the Web](https://www.anthropic.com/news/claude-code-on-the-web)
-- [Official Anthropic Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
-- [Anthropic API Documentation](https://docs.anthropic.com)
-- [Prompt Engineering Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)
-- [Claude Sonnet 4.5 Announcement](https://www.anthropic.com/news/claude-sonnet-4-5)
+- [Official Claude Code Best Practices](https://code.claude.com/docs)
+- [Anthropic API Documentation](https://platform.claude.com)
+- [Prompt Engineering Guide](https://platform.claude.com/docs/build-with-claude/prompt-engineering/overview)
+- [Claude Opus 4.6 Announcement](https://www.anthropic.com/news/claude-opus-4-6)
+- [Claude Sonnet 4.6 Announcement](https://www.anthropic.com/news/claude-sonnet-4-6)
 
 ## ⭐ Acknowledgments
 

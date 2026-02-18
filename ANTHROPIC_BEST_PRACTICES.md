@@ -5,7 +5,7 @@ This document integrates the latest official best practices from Anthropic's eng
 ## 📚 Source Integration
 
 This integration incorporates insights from:
-- [Anthropic's Official Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
+- [Anthropic's Official Claude Code Best Practices](https://code.claude.com/docs)
 - [How Anthropic Teams Use Claude Code](https://www.anthropic.com/news/how-anthropic-teams-use-claude-code)
 - Internal Anthropic engineering workflows
 
@@ -36,69 +36,80 @@ project-root/
 └── subdirectory/CLAUDE.md       # Directory-specific context
 ```
 
-### 2. Extended Thinking Integration (Claude Sonnet 4.5 - 2025 Update)
+### 2. Adaptive Reasoning (Opus 4.6 / Sonnet 4.6 - February 2026)
 
-#### Thinking Levels (Official Mapping with Token Budgets)
+#### Adaptive Thinking (4.6 Models)
 ```markdown
-# Mapped directly to specific thinking budgets:
-"think" = 4,000 tokens
-"think hard" / "megathink" = 10,000 tokens
-"ultrathink" = 31,999 tokens
-Extended thinking = up to 64,000 tokens
-Interleaved thinking (beta) = full 200K context window
+# Opus 4.6 and Sonnet 4.6 use adaptive thinking:
+- Claude dynamically allocates reasoning depth per request
+- Effort levels: low, medium, high (default), max (Opus 4.6 only)
+- Configure via CLAUDE_CODE_EFFORT_LEVEL env var or /model command
+- Toggle with Option+T (macOS) / Alt+T (Windows/Linux)
+- Keywords like "think hard" or "ultrathink" are regular prompt instructions, NOT token controls
+- Interleaved thinking (between tool calls) auto-enabled in adaptive mode
 
-# Examples:
-- "think about the best approach for this OAuth implementation" (4K tokens)
-- "think hard about potential security vulnerabilities" (10K tokens)
-- "ultrathink about the architectural implications" (32K tokens)
-- "use extended thinking with 64K budget for this critical migration decision"
+# Effort Level Guide:
+- low: Quick answers, simple lookups, straightforward tasks
+- medium: Standard code reviews, moderate debugging
+- high (default): Complex architecture, security analysis, multi-step debugging
+- max (Opus 4.6 only): Critical migrations, system-wide refactoring
+
+# Legacy Models (Sonnet 4.5 and earlier):
+- Fixed budget_tokens: thinking: {type: "enabled", budget_tokens: N}
+- budget_tokens deprecated on 4.6 models — use effort levels instead
 ```
 
-#### Hybrid Reasoning Model (Claude Sonnet 4.5)
+#### Adaptive Reasoning Model (Opus 4.6 / Sonnet 4.6)
 ```markdown
-# Two Modes:
-1. **Instant Responses**: Straightforward tasks, no visible thinking
-2. **Extended Thinking**: Complex problems with visible reasoning blocks
+# Adaptive Reasoning:
+1. **Low effort**: Quick responses, minimal reasoning
+2. **High effort (default)**: Deep analysis with extended reasoning
+3. **Max effort (Opus 4.6)**: Maximum reasoning depth for critical decisions
 
-# Visible Thinking:
-- Shows actual internal reasoning process, not summaries
-- API returns summary of full thinking process
-- Prevents misuse while providing intelligence benefits
-- Thinking blocks appear when extended thinking mode enabled
+# Thinking Output:
+- Claude 4+ models return summarized thinking (not full chain of thought)
+- Billed for full thinking tokens, not just the summary
+- Interleaved thinking: reasoning happens between tool calls automatically
+- Thinking redaction: safety system encrypts flagged reasoning blocks
 ```
 
-#### When to Use Extended Thinking
+#### When to Use Each Effort Level
 ```markdown
-# By Token Budget:
-- **4K (think)**: Standard architectural planning, code reviews, simple refactoring
-- **10K (think hard)**: Security analysis, performance optimization, complex debugging
-- **32K (ultrathink)**: Critical migrations, systemic problem resolution, new pattern design
-- **64K budget**: Major architectural overhauls, framework migrations, system-wide refactoring
+# By Effort Level (Opus 4.6 / Sonnet 4.6):
+- **low**: Standard code lookups, simple questions, quick formatting tasks
+- **medium**: Routine code reviews, straightforward debugging, moderate planning
+- **high** (default): Complex architecture, security analysis, multi-step debugging
+- **max** (Opus 4.6 only): Critical migrations, novel design challenges, system-wide refactoring
 
 # Cost Considerations:
-- Ultrathink generates disproportionate costs
-- Reserve for major architectural challenges only
-- Most tasks work well with "think" (4K) or "think hard" (10K)
-- Balance quality needs with token efficiency
+- Higher effort = more thinking tokens = higher cost
+- "max" generates the most tokens — reserve for critical decisions
+- Default "high" provides optimal quality/cost balance for most tasks
+- Thinking tokens billed at full rate even though API returns summaries
 ```
 
-#### Claude Sonnet 4.5 Capabilities (September 2025)
+#### Current Model Capabilities (February 2026)
 ```markdown
-# Performance Benchmarks:
-- 30+ hours of autonomous work (vs 7 hours for Opus 4)
-- 0% error rate on code editing benchmark (vs 9% on Sonnet 4)
-- State-of-the-art on SWE-bench Verified evaluation
-- 61.4% on OSWorld benchmark (computer use tasks)
+# Model Lineup:
+- Opus 4.6 (claude-opus-4-6): Flagship model, released Feb 5, 2026
+- Sonnet 4.6 (claude-sonnet-4-6): Default model, released Feb 17, 2026
+- Haiku 4.5 (claude-haiku-4-5): Fast model, released Oct 15, 2025
+- All prior models (Sonnet 4.5, Opus 4.5, Opus 4.1, Sonnet 4, Opus 4) are now legacy
 
-# Key Features:
-- Hybrid reasoning: instant or extended thinking on demand
-- Exceptional edit capabilities with near-perfect accuracy
-- Extended autonomous work for complex, multi-step tasks
-- Improved alignment: reduced sycophancy, deception, power-seeking
+# Performance Benchmarks:
+- Opus 4.6: SWE-bench Verified ~80.8%, OSWorld 72.7%, ARC-AGI-2 68.8%
+- Sonnet 4.6: SWE-bench Verified 79.6%, OSWorld 72.5%
+- Both models support adaptive thinking and interleaved reasoning
+
+# Context and Output:
+- Context window: 200K standard, 1M beta (Opus 4.6 and Sonnet 4.6)
+- Max output: 128K tokens (Opus 4.6), 64K tokens (Sonnet 4.6/Haiku 4.5)
 
 # Pricing:
-- Same as Claude Sonnet 4: $3/$15 per million tokens
-- Available everywhere including API, AWS, GCP
+- Opus 4.6: $5/$25 per million tokens (67% cheaper than legacy Opus 4)
+- Sonnet 4.6: $3/$15 per million tokens (unchanged from Sonnet 4.5)
+- Haiku 4.5: $1/$5 per million tokens
+- Available via API, AWS Bedrock, Google Vertex AI, Microsoft Foundry
 ```
 
 ### 3. Official Workflow Patterns
@@ -433,7 +444,7 @@ Add these specialized sub-agent configurations to your `.claude/agents/`:
 
 # Security Updates:
 - CVE-2025-54794 and CVE-2025-54795 patched
-- Update to v0.2.111 or v1.0.20 minimum
+- Update to v2.1.45 minimum
 - Sandboxing mitigates exploit impact automatically
 ```
 
@@ -507,14 +518,18 @@ claude --sandbox-root /path/to/project
 # Choose Your Interface:
 1. **CLI (Terminal)**: Maximum control, Unix philosophy, automation
 2. **VS Code Extension**: IDE integration, visual workflows
-3. **Web Interface**: Zero setup, mobile access, cloud execution
-4. **MCP Server Mode**: Remote invocation from other tools
+3. **JetBrains Plugin**: IntelliJ, PyCharm, WebStorm integration
+4. **Desktop App**: Standalone app for macOS and Windows
+5. **Web Interface**: Zero setup, mobile access, cloud execution (claude.ai/code)
+6. **Chrome Extension**: Browser automation and UI testing
+7. **Slack Integration**: @Claude mentions generate PRs
+8. **MCP Server Mode**: Remote invocation from other tools
 
 # All Provide:
-- Claude Sonnet 4.5 capabilities
+- Opus 4.6 and Sonnet 4.6 capabilities
 - Sandboxed execution
-- Extended thinking and hybrid reasoning
-- Sub-agent coordination
+- Adaptive reasoning with effort levels
+- Sub-agent coordination and Agent Teams
 ```
 
 ### 12. Model Context Protocol (MCP) - Industry Adoption (2025)
@@ -566,6 +581,14 @@ claude mcp serve
 - Services: Stripe, Figma, Sentry, Datadog
 - Communication: Slack, Discord, Google Drive
 - Documentation: Context7 MCP server integration
+
+# MCP Apps (January 2026):
+- Interactive UI rendering in chat via sandboxed iframes
+- Launch partners: Amplitude, Asana, Box, Canva, Clay, Figma, Hex, monday.com, Slack
+- Spec co-developed with OpenAI, Block, VS Code, JetBrains, AWS
+- MCP OAuth support: --client-id and --client-secret flags
+- MCP Tool Search: auto-activates when tools exceed 10% of context window
+- HTTP transport recommended (SSE transport deprecated)
 ```
 
 ### 13. Multi-Agent Architecture (Official Anthropic Research)
@@ -573,14 +596,18 @@ claude mcp serve
 #### Performance Breakthrough
 ```markdown
 # Anthropic Internal Research Results:
-- Multi-agent (Opus 4 orchestrator + Sonnet 4 workers) vs single Opus 4
+- Multi-agent (Opus 4.6 orchestrator + Sonnet 4.6 workers) vs single-agent approaches
 - **90.2% improvement** on internal research evaluation
 - Key insight: Separation of concerns → thorough independent investigations
 - Each agent has separate context window (no context pollution)
+- **Agent Teams** (native): Enable via CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+- Lead delegates to teammates; shared task lists and messaging; research preview
 
 # Architecture Pattern:
-- **Orchestrator Agent**: Opus 4 for strategic coordination
-- **Worker Agents**: Sonnet 4 for specialized execution
+- **Agent Teams**: Native multi-agent with automated coordination (recommended)
+- **Orchestrator Agent**: Opus 4.6 for strategic coordination
+- **Worker Agents**: Sonnet 4.6 for specialized execution
+- **Recommended sizing**: 2-5 teammates with 5-6 tasks each
 - **Wave-Based Deployment**: Strategic batches to manage context limits
 - **Hierarchical Tiers**: Strategic → Domain → Task specialists
 ```
@@ -631,17 +658,17 @@ Wave 4: Integration, QA, Deployment specialists
 **Multi-Agent Performance:**
 - **90.2% improvement** with multi-agent vs single-agent architecture
 - **84% reduction** in permission prompts with sandboxing
-- **30+ hours** of autonomous work with Claude Sonnet 4.5
+- **Opus 4.6 and Sonnet 4.6** as current-generation models (Feb 2026)
 
-**Code Quality:**
-- **0% error rate** on code editing benchmark (Sonnet 4.5)
-- **State-of-the-art** on SWE-bench Verified evaluation
-- **61.4% score** on OSWorld computer use benchmark
+**Code Quality (Current Models):**
+- **SWE-bench Verified**: Opus 4.6 ~80.8%, Sonnet 4.6 79.6%
+- **OSWorld**: Opus 4.6 72.7%, Sonnet 4.6 72.5%
+- **ARC-AGI-2**: Opus 4.6 68.8% (nearly doubled from Opus 4.5's 37.6%)
 
 ## 🎯 Next Steps (Updated for 2025)
 
 ### Essential Updates
-1. **Upgrade to Claude Sonnet 4.5** if not already using latest model
+1. **Upgrade to Opus 4.6 or Sonnet 4.6** — all prior models are now legacy
 2. **Enable sandboxing** for 84% fewer permission prompts and better security
 3. **Update Claude.md** with:
    - Extended thinking token budgets (4K, 10K, 32K)
@@ -662,7 +689,7 @@ Wave 4: Integration, QA, Deployment specialists
 
 ### Security & Deployment
 6. **Configure sandbox security**:
-   - Update to v0.2.111+ or v1.0.20+ for CVE patches
+   - Update to v2.1.45+ (latest) for security fixes and latest features
    - Set --sandbox-root for project isolation
    - Configure network domain allowlist
 

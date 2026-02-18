@@ -195,6 +195,31 @@ The `CLAUDE.md` file provides persistent global context for every interaction. U
 - [Clear directory structure guidelines]
 ```
 
+### Modular Rules (.claude/rules/)
+Place `.md` files in `.claude/rules/` for modular project instructions:
+- All `.md` files auto-loaded as project memory (same priority as `.claude/CLAUDE.md`)
+- Path-specific rules via YAML frontmatter: `paths: ["src/api/**/*.ts"]`
+- Standard glob patterns with brace expansion: `*.{ts,tsx}`
+- Subdirectories supported, recursively discovered
+- Symlinks supported for cross-project shared rules
+- User-level rules in `~/.claude/rules/` load before project rules (lower priority)
+
+### Import System
+- `@path/to/import` syntax to include additional files in CLAUDE.md
+- Relative paths resolve relative to the containing file
+- Recursive imports supported (max 5 hops)
+- Not evaluated inside markdown code blocks
+- First-time external imports show an approval dialog
+
+### Managed Policy (Enterprise)
+Organization-wide CLAUDE.md at system paths (cannot be overridden):
+- macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`
+- Linux: `/etc/claude-code/CLAUDE.md`
+- Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`
+
+### /init Command
+Run `/init` to generate a starter CLAUDE.md from project structure analysis. Keep it concise — ask for each line: "Would removing this cause mistakes?"
+
 ### Example: Web Application Claude.md (Enhanced Modular Approach)
 
 ```markdown
@@ -354,6 +379,117 @@ Examples of excellent code that you should match the design/style/conventions of
 - Follows existing design principles
 - No obvious security vulnerabilities
 - Performance optimizations considered
+```
+
+### Skills System (February 2026)
+
+Skills are the successor to custom commands, providing richer packaging of domain expertise for Claude Code.
+
+#### Skill Structure
+```markdown
+# Location: .claude/skills/<name>/SKILL.md
+# User-level: ~/.claude/skills/<name>/SKILL.md
+
+# YAML Frontmatter:
+---
+name: skill-name
+description: What this skill does
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+argument-hint: [--flag] [positional-arg]
+disable-model-invocation: false  # true = manual trigger only
+model: opus                       # optional model override
+context: fork                     # optional: run in isolated subagent
+---
+
+# Skill body with $ARGUMENTS placeholder
+# Invoked via /skill-name args
+```
+
+#### Key Features
+- **Progressive disclosure**: Metadata loaded at startup, full content on demand
+- **Hot-reload**: Skills update without restarting sessions
+- **Auto-discovery**: Nested `.claude/skills/` directories discovered recursively (monorepo support)
+- **Forked context**: `context: fork` runs skill in isolated subagent
+- **Character budget**: 2% of context window (configurable via `SLASH_COMMAND_TOOL_CHAR_BUDGET`)
+- **Commands merged**: `.claude/commands/` still works but skills take precedence if names conflict
+
+### Hooks System
+
+Hooks run scripts automatically at specific points in Claude's workflow. Unlike CLAUDE.md instructions (advisory), hooks are deterministic and guaranteed to execute.
+
+#### Hook Events
+```markdown
+# Key lifecycle events:
+- SessionStart: When session begins/resumes (matchers: startup, resume, clear, compact)
+- UserPromptSubmit: Before processing user input
+- PreToolUse: Before tool execution (can block). Matcher: tool name
+- PostToolUse: After tool success. Matcher: tool name
+- Stop: When Claude finishes responding (can block)
+- SubagentStart/SubagentStop: Subagent lifecycle
+- TeammateIdle/TaskCompleted: Agent Teams events
+
+# Three handler types:
+- command: Shell command execution (supports async: true for background)
+- prompt: Single-turn LLM evaluation returning JSON decision
+- agent: Multi-turn subagent with tool access (Read, Grep, Glob)
+```
+
+#### Configuration
+```bash
+# Interactive setup:
+/hooks
+
+# Or edit .claude/settings.json directly
+# Claude can write hooks: "Write a hook that runs eslint after every file edit"
+```
+
+### Auto Memory and Context Management
+
+#### Auto Memory System
+```markdown
+# Claude automatically saves per-project notes:
+- Location: ~/.claude/projects/<project>/memory/
+- MEMORY.md (index) + optional topic files (debugging.md, api-conventions.md)
+- First 200 lines of MEMORY.md loaded into system prompt each session
+- Topic files loaded on demand
+- Enable/disable: CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 (force on) or =1 (force off)
+```
+
+#### Compaction
+```markdown
+# Automatic context summarization for long sessions:
+- Auto-compaction triggers when approaching context limits
+- /compact <instructions> for manual control (e.g. "/compact Focus on the API changes")
+- CLAUDE.md can include compaction instructions
+- Enables effectively infinite conversations
+- Rewind-and-summarize: Esc + Esc or /rewind for partial compaction
+```
+
+### Session Management
+
+```markdown
+# Resume and manage sessions:
+- claude --continue: Resume most recent conversation
+- claude --resume: Open session picker or resume by name
+- claude --from-pr 123: Resume sessions linked to a GitHub PR
+- /resume: Switch conversations from inside a session
+- /rename: Name sessions for later retrieval (e.g. "oauth-migration")
+- /teleport: Move sessions between surfaces (terminal → web → desktop)
+- /desktop: Hand off to Desktop app for visual diff review
+
+# Sessions stored per project directory
+# Forked sessions grouped under root session in picker
+```
+
+### Plan Mode
+
+```markdown
+# Read-only exploration before implementation:
+- Shift+Tab: Cycle modes (Normal → Auto-Accept → Plan → Delegate)
+- --permission-mode plan: Start session in plan mode
+- Ctrl+G: Open plan in external text editor for direct editing
+- Plan mode prevents code changes while exploring codebase
+- Skip planning for small, clear-scope tasks
 ```
 
 ## Version Control Standards
@@ -598,36 +734,39 @@ Before completing any task:
 ```
 
 ### Think First, Code Second
-For complex features, use extended thinking with Claude Sonnet 4.5's hybrid reasoning model:
+For complex features, leverage adaptive reasoning available on Opus 4.6 and Sonnet 4.6:
 
 ```markdown
-# Thinking Levels (with specific token budgets):
-- "think" - Basic analysis (4,000 tokens)
-- "think hard" / "megathink" - Deeper evaluation (10,000 tokens)
-- "ultrathink" - Maximum thinking budget (31,999 tokens)
-- Extended thinking can use up to 64,000 tokens for critical architectural decisions
-- With interleaved thinking (beta), full 200K context window available
+# Adaptive Reasoning (Opus 4.6 / Sonnet 4.6):
+- 4.6 models use adaptive thinking: Claude dynamically allocates reasoning depth per request
+- Effort levels control reasoning depth: low, medium, high (default), max (Opus 4.6 only)
+- Configure via CLAUDE_CODE_EFFORT_LEVEL env var or /model command
+- Toggle with Option+T (macOS) / Alt+T (Windows/Linux)
+- Keywords like "think hard" or "ultrathink" are regular prompt instructions, NOT token-allocation controls
+- Interleaved thinking (reasoning between tool calls) auto-enabled in adaptive mode
 
-# Hybrid Reasoning Model (Claude Sonnet 4.5):
-- Instant responses for straightforward tasks
-- Extended thinking with visible reasoning for complex problems
-- System automatically summarizes thinking process in API responses
-- Visible thinking blocks show actual internal reasoning, not summaries
+# Effort Level Guide:
+- **low**: Quick answers, simple lookups, straightforward tasks
+- **medium**: Standard code reviews, moderate debugging, routine planning
+- **high** (default): Complex architecture, security analysis, multi-step debugging
+- **max** (Opus 4.6 only): Critical migrations, system-wide refactoring, novel design challenges
 
-# When to Use Each Level:
-- **think (4K)**: Standard architectural planning, code reviews, simple refactoring
-- **think hard (10K)**: Security analysis, performance optimization, complex debugging
-- **ultrathink (32K)**: Critical migrations, systemic problem resolution, new pattern design
-- **64K budget**: Major architectural overhauls, framework migrations, system-wide refactoring
+# Legacy Models (Sonnet 4.5 and earlier):
+- Use fixed budget_tokens approach: thinking: {type: "enabled", budget_tokens: N}
+- Output budget up to 31,999 tokens for thinking
+- Extended thinking can use up to 64,000 tokens
+- budget_tokens is deprecated on 4.6 models — use effort levels instead
 
-# Example:
-Think hard about implementing a machine learning expense categorization system.
-Analyze the technical challenges, data requirements, ML approaches, privacy concerns,
-user experience, edge cases, and deployment strategy. Save the plan to development_plan.txt
+# API Configuration:
+- Adaptive (4.6 models): thinking: {type: "adaptive"}
+- Effort control: output_config: {effort: "low" | "medium" | "high" | "max"}
+- Legacy (pre-4.6): thinking: {type: "enabled", budget_tokens: N}
 
 # Cost Considerations:
-Ultrathink generates disproportionate costs - reserve for major architectural challenges only.
-For most tasks, "think" (4K) or "think hard" (10K) provides optimal balance of quality and cost.
+- Higher effort levels generate more thinking tokens and higher costs
+- "max" effort reserved for critical decisions only
+- For most tasks, the default "high" provides optimal quality/cost balance
+- Thinking tokens are billed at full rate even though API returns summarized output
 ```
 
 ## Advanced Techniques
@@ -908,12 +1047,14 @@ Based on Anthropic's research and production implementations, multi-agent system
 #### Performance Benchmarks
 ```markdown
 # Anthropic Internal Research:
-- Multi-agent system (Opus 4 orchestrator + Sonnet 4 workers) vs single-agent Opus 4
+- Multi-agent system (Opus 4.6 orchestrator + Sonnet 4.6 workers) vs single-agent approaches
 - Result: 90.2% improvement on internal research evaluation
 - Key insight: Separation of concerns enables thorough, independent investigations
 
 # Architecture Patterns:
-- **Orchestrator-Worker**: Lead agent (Opus 4) coordinates specialized workers (Sonnet 4)
+- **Agent Teams** (native): Enable via CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1. Lead agent delegates to teammates with independent context windows, shared task lists, and messaging. Research preview.
+- **Orchestrator-Worker**: Lead agent (Opus 4.6) coordinates specialized workers (Sonnet 4.6)
+- **Recommended sizing**: 2-5 teammates with 5-6 tasks each
 - **Wave-Based Generation**: Deploy agents in strategic batches to manage context limits
 - **Hierarchical Multi-Tier**: Strategic orchestrator → Domain coordinators → Task specialists
 ```
@@ -999,7 +1140,7 @@ Claude Code introduced filesystem and network isolation features that dramatical
 
 # Security Vulnerabilities:
 - CVE-2025-54794 and CVE-2025-54795 patched
-- Update to v0.2.111 (CLI) or v1.0.20 (latest) for security fixes
+- Update to v2.1.45 (latest) for security fixes and latest features
 - Sandboxing prevents exploit impact even if vulnerabilities exist
 ```
 
@@ -1066,11 +1207,15 @@ Claude Code is now available beyond the CLI, enabling zero-setup development and
 # Choose Your Interface:
 1. **CLI (Terminal)**: Maximum control, Unix philosophy, power users
 2. **VS Code Extension**: Native IDE experience, visual workflows
-3. **Web Interface**: Zero setup, cross-device, mobile access
-4. **MCP Server Mode**: Remote invocation from other tools
+3. **JetBrains Plugin**: IntelliJ, PyCharm, WebStorm integration
+4. **Desktop App**: Standalone app for macOS and Windows, visual diff review
+5. **Web Interface**: Zero setup, cross-device, mobile access (claude.ai/code)
+6. **Chrome Extension**: Browser automation, UI testing, visual iteration
+7. **Slack Integration**: @Claude mentions generate PRs from bug reports
+8. **MCP Server Mode**: Remote invocation from other tools
 
 # All interfaces provide:
-- Same Claude Sonnet 4.5 model capabilities
+- Claude Opus 4.6 and Sonnet 4.6 model capabilities
 - Sandboxing with filesystem/network isolation
 - Extended thinking and hybrid reasoning
 - Sub-agent coordination and specialized workflows
@@ -1181,6 +1326,17 @@ Please help me integrate these features:
 5. Run all tests to ensure nothing is broken
 6. Merge to main and clean up branches when successful
 ```
+
+## Common Anti-Patterns
+
+Avoid these common mistakes identified by Anthropic's internal teams:
+
+1. **Kitchen Sink Session**: Mixing unrelated tasks without clearing context. Use `/clear` between different tasks.
+2. **Correcting Over and Over**: More than 2 corrections on the same issue → `/clear` and restart with a better prompt.
+3. **Over-Specified CLAUDE.md**: Too long, rules get ignored. Keep it concise and relevant.
+4. **Trust-Then-Verify Gap**: Accepting plausible code without testing edge cases. Always verify with tests.
+5. **Infinite Exploration**: Unscoped investigation filling context window. Set clear boundaries.
+6. **Start Fresh on Failed Autonomy**: When autonomous attempts fail, start fresh rather than debugging — avoids compounding errors (Anthropic RL Engineering recommendation).
 
 ## Quick Reference Checklist
 
