@@ -54,6 +54,21 @@ Interleaved thinking (beta) = full 200K context window
 - "use extended thinking with 64K budget for this critical migration decision"
 ```
 
+#### Effort Level Defaults (v2.1.68+)
+```markdown
+# Opus 4.6 effort defaults differ by context:
+- **Claude Code (Max/Team subscribers)**: medium effort is the default as of v2.1.68
+  - `ultrathink` keyword forces high effort for that single turn
+  - Use `ultrathink` sparingly — reserve for genuinely hard architectural decisions
+- **API (direct)**: Opus 4.6 defaults to high effort
+  - Developers must set effort explicitly for predictable cost and latency
+  - Not setting effort on API calls will result in high-effort (and high-cost) by default
+
+# Model capability fields (useful for building adaptive tools):
+- `supportsEffort` — whether the model accepts an effort parameter
+- `supportsAdaptiveThinking` — whether the model supports extended/hybrid thinking modes
+```
+
 #### Hybrid Reasoning Model (Claude Sonnet 4.5)
 ```markdown
 # Two Modes:
@@ -99,6 +114,24 @@ Interleaved thinking (beta) = full 200K context window
 # Pricing:
 - Same as Claude Sonnet 4: $3/$15 per million tokens
 - Available everywhere including API, AWS, GCP
+```
+
+#### Model Availability and Lifecycle
+```markdown
+# Current Models:
+- **Claude Sonnet 4.6**: $3/$15 per MTok, primary workhorse model
+- **Claude Opus 4.6**: $15/$75 per MTok, 200K context, highest capability
+- **Claude Opus 4.6 Fast Mode**: $30/$150 per MTok, ≤200K context (research preview)
+  - Higher throughput, faster output — not a different model
+  - Toggle with /fast in Claude Code
+- **Claude Haiku 4.x**: lightweight tasks, summarisation, scanning
+
+# Removed from First-Party API:
+- **Opus 4 and Opus 4.1** are fully removed (not just "legacy")
+- Users were auto-migrated to Opus 4.6
+- Do not reference these versions in new code or documentation
+
+# Docs canonical URL: https://code.claude.com/docs
 ```
 
 ### 3. Official Workflow Patterns
@@ -170,7 +203,11 @@ Usage: `/project:fix-github-issue 1234`
 
 #### Container-Based Safe Automation
 ```bash
-# Use with Docker dev containers for safety:
+# --dangerously-skip-permissions is DEPRECATED as of v2.1.69
+# Prefer /sandbox instead — provides OS-level isolation without bypassing all checks
+# --dangerously-skip-permissions is only safe in containers with no internet access
+
+# Legacy usage (containers only):
 claude --dangerously-skip-permissions
 
 # Reference implementation:
@@ -459,6 +496,15 @@ claude --sandbox-root /path/to/project
     }
   }
 }
+
+# macOS only — custom MITM proxy / corporate TLS inspection:
+# sandbox.enableWeakerNetworkIsolation relaxes TLS certificate verification
+# so a custom proxy can intercept traffic. Only use in controlled environments.
+{
+  "sandbox": {
+    "enableWeakerNetworkIsolation": true
+  }
+}
 ```
 
 ### 11. Web Interface and Deployment Options (October 2025)
@@ -696,6 +742,133 @@ From Anthropic's official recommendations:
 - **Quality Assurance**: Multiple specialized reviews ensure comprehensive coverage
 - **Scalability**: Coordinate multiple sub-agents for complex, multi-faceted development tasks
 - **Consistency**: Reusable sub-agent configurations ensure consistent quality across projects
+
+## 🆕 New Products and Features (2026)
+
+### Agent SDK
+```markdown
+# Published: platform.claude.com/docs/en/agent-sdk/overview
+- Build custom agents using Claude Code's tools directly
+- Full control over orchestration, tool access, and permissions
+- Exposes the same primitives Claude Code uses internally
+- Suitable for embedding Claude Code capabilities in your own products
+```
+
+### Claude Cowork (Research Preview — January 2026)
+```markdown
+# Enterprise task automation via MCP
+- Runs locally in an isolated VM with file access and MCP integrations
+- Non-developer counterpart to Claude Code
+- Included in Max plan
+- Designed for business users automating document/data tasks
+- Research preview: behaviour and availability may change
+```
+
+### MCP Apps — Interactive UI in Chat
+```markdown
+# UI rendered inside the chat via ui:// scheme resources
+- SDK: @modelcontextprotocol/ext-apps
+- Enables rich interactive widgets (forms, dashboards, pickers) inside the conversation
+- Launch partners: Amplitude, Asana, Box, Canva, Clay, Figma, Hex, monday.com, Slack
+- Use cases: data viz inside chat, interactive report views, structured input forms
+```
+
+## ⚠️ Deprecated Patterns
+
+### Prefilled Assistant Turns (Claude 4.6 Models)
+```markdown
+# Prefilling the assistant turn is deprecated for 4.6 models.
+# Migration paths by use case:
+
+# Format control → use Structured Outputs or ask directly in the prompt
+# Before: assistant turn prefilled with "```json"
+# After:  "Respond in JSON only." in the user or system prompt, or use response_format
+
+# Eliminating preambles → system prompt instruction
+# Before: prefilled assistant turn to skip intro
+# After:  system prompt: "Respond directly without preamble"
+
+# Avoiding refusals → Claude 4.6 has significantly improved alignment
+# Before: prefill to steer away from refusals
+# After:  direct prompting is sufficient; aggressive steering is unnecessary
+
+# Continuations → move to user turn
+# Before: prefill with partial text to continue
+# After:  user message: "Your previous response was interrupted ending with [text]. Continue."
+
+# Context hydration → inject into user turn or via tools
+# Before: prefill with prior context
+# After:  include context in the user message or use tool results
+```
+
+### `--dangerously-skip-permissions` Deprecation
+```markdown
+# Deprecated in favour of /sandbox (v2.1.69)
+# Still functional but only safe inside containers with no internet access
+# /sandbox provides equivalent capability with OS-level isolation
+# Do not use --dangerously-skip-permissions in new scripts or docs
+```
+
+## 🔄 Changed Behaviour
+
+### BashTool Login Shell (v2.1.51+)
+```markdown
+# BashTool no longer starts a login shell by default (changed in v2.1.51)
+# Previously opt-in via CLAUDE_BASH_NO_LOGIN env var
+# Impact: .bash_profile / .zprofile are NOT sourced automatically
+# If your commands rely on login-shell PATH or env vars, source them explicitly:
+#   source ~/.zprofile && your-command
+# Or add required env vars to your CLAUDE.md / settings
+```
+
+## 🧠 Prompt Engineering (Claude 4.6 Updates)
+
+### Anti-Laziness Prompting — Dial Back Aggressive Language
+```markdown
+# PROBLEM: Aggressive emphasis that worked on older models causes overtriggering on 4.6
+# Example: "CRITICAL: You MUST use this tool on EVERY response"
+#   → On Opus 4.6, this causes the tool to fire even when clearly not needed
+
+# RULE: Opus 4.6 is more responsive to system prompts than previous models
+# Measured, clear instructions outperform aggressive language
+
+# BEFORE (over-aggressive):
+"CRITICAL: YOU MUST ALWAYS check the database before answering ANY question."
+
+# AFTER (measured):
+"Check the database when answering questions about current data."
+```
+
+### Opus 4.6 Subagent Overtriggering
+```markdown
+# Opus 4.6 proactively delegates to subagents — more than intended in most cases
+# It will spin up subagents for tasks that don't warrant the overhead
+
+# Explicit guidance to include in system prompts:
+"Only delegate to subagents for tasks requiring parallel execution or specialised tools.
+Do not delegate simple read, write, or single-step operations to subagents."
+
+# Signs of overtriggering:
+- Subagents launched for single file reads
+- Subagent chains for tasks completable in one tool call
+- Subagents delegated to subagents without clear justification
+```
+
+### Anti-Overengineering System Prompt Block
+```markdown
+# Opus 4.5 and 4.6 have an overengineering tendency.
+# Add this block to system prompts for code tasks to constrain scope:
+
+"""
+SCOPE CONSTRAINTS:
+- Implement only what is explicitly requested. Do not add related features.
+- Do not add defensive error handling for internal code paths.
+- Do not add docstrings, comments, or type annotations to code you did not change.
+- Do not create abstractions for single use cases.
+- Do not add configuration options or flags unless specified.
+- Prefer the simplest implementation that passes the tests.
+"""
+```
 
 ---
 

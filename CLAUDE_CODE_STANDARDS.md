@@ -58,7 +58,22 @@ The implementation must strictly adhere to these **non-negotiable principles**:
 - Errors must be clear, actionable, and honest
 - No silent failures or suppressed exceptions
 
-### 5. Measurable Success Criteria
+### 5. Verification-First Development
+
+The single highest-leverage practice: always provide verification criteria before Claude starts coding.
+
+- Without success criteria, Claude may produce plausible-looking code that doesn't actually work
+- Verification can be a test suite, linter output, screenshot, or any Bash command Claude can run
+- State the expected outcome upfront: "this should pass `npm test`", "the page should render X", "the API should return Y"
+- Claude will iterate against the criterion rather than stopping at a plausible-looking result
+
+```markdown
+# Example: Verification-First Prompt
+"Add pagination to the user list. When done, `npm test` should pass and
+the /users page should show 20 items per page with working Next/Prev controls."
+```
+
+### 6. Measurable Success Criteria
 
 Implementation will be successful **only if**:
 - **Zero Duplication**: No duplicate code or files exist in the codebase
@@ -147,6 +162,40 @@ Can you go back to the prior branch and repeat this process, but solve the under
 ```
 
 ## Claude.md Configuration
+
+### Import Syntax
+
+Pull external files into CLAUDE.md with `@path/to/file`:
+
+```markdown
+# CLAUDE.md
+@PRINCIPLES.md
+@docs/architecture.md
+@.claude/STANDARDS.md
+```
+
+- Paths are relative to the CLAUDE.md file location
+- Child-directory CLAUDE.md files are pulled in on demand (not loaded globally)
+- Keeps the root CLAUDE.md short while allowing deep project-specific detail
+
+### Custom Compaction Instructions
+
+Embed compaction rules directly in CLAUDE.md to control what Claude preserves when compacting context:
+
+```markdown
+## Compaction Instructions
+When compacting, always preserve:
+- List of modified files
+- Current task context
+- Any pending user requests
+- Key decisions made this session
+```
+
+### Pruning Rule
+
+Before adding anything to CLAUDE.md, ask: "Would removing this cause Claude to make mistakes? If not, cut it." Over-specified CLAUDE.md files dilute the rules that matter — shorter is more reliable.
+
+---
 
 The `CLAUDE.md` file provides persistent global context for every interaction. Use the **CONTEXT Framework**:
 
@@ -296,7 +345,51 @@ The `CLAUDE.md` file provides persistent global context for every interaction. U
 - Performance considerations (refactoring-expert sub-agent)
 ```
 
-## Commands and Context
+## Skills and Commands
+
+### Skills (Preferred Approach)
+
+Skills (`.claude/skills/<name>/SKILL.md`) are the preferred approach over plain Commands (`.claude/commands/`). Commands still work but skills offer additional capabilities.
+
+#### Skills vs Commands
+
+| Feature | Commands | Skills |
+|---------|----------|--------|
+| Storage | `.claude/commands/` | `.claude/skills/<name>/SKILL.md` |
+| Metadata | None | YAML frontmatter (`name`, `description`) |
+| Side-effect guard | No | `disable-model-invocation: true` for manual-trigger workflows |
+| Isolated execution | No | `context: fork` |
+| Self-referencing | No | `${CLAUDE_SKILL_DIR}` variable |
+| Per-skill hooks | No | Yes |
+| Auto-invocation | No | Invoked automatically when relevant |
+
+#### Skill Frontmatter Example
+```yaml
+---
+name: deploy
+description: Deploys the application to production
+disable-model-invocation: true
+context: fork
+---
+```
+
+#### Bundled Skills
+These skills ship with Claude Code:
+
+- `/simplify` — Reviews recently changed files for quality; spawns 3 parallel review agents; applies fixes automatically
+- `/batch` — Orchestrates large-scale changes; decomposes into 5–30 units; spawns one background agent per unit in an isolated worktree; each opens a PR
+- `/copy` — Interactive code block picker with "always copy full response" option
+- `/debug` — Troubleshoots current session by reading the debug log
+- `/claude-api` — Building apps with the Claude API and Anthropic SDK
+
+#### Invoking Skills
+```bash
+/skill-name              # explicit invocation
+/skill-name some args    # with arguments
+```
+Skills are also invoked automatically when Claude determines they are relevant to the current task.
+
+---
 
 Commands provide **TARGETED** context for specific, repeatable tasks:
 
@@ -479,6 +572,23 @@ src/
 - Hooks: `/src/hooks/use[HookName].ts`
 ```
 
+## Memory
+
+### Auto-Memory
+
+Claude Code automatically saves learnings across sessions — build commands, debugging insights, project-specific patterns, and other things it discovers during a session.
+
+- Learnings persist automatically without manual action
+- Manage saved memories with the `/memory` command
+- Review, edit, or delete entries via `/memory`
+- Complements (but does not replace) explicit CLAUDE.md context
+
+```bash
+/memory          # view and manage saved learnings
+```
+
+---
+
 ## Context Management and Session Continuity
 
 ### Proactive Context Management Framework
@@ -583,6 +693,21 @@ When Claude Code cannot automatically test something:
 3. **Close the Loop**: Give Claude the feedback it needs to fix issues
 4. **Minimize Manual Testing**: Build automated testing where possible
 5. **Use Command Signals**: Apply [DEBUG] or [REVIEW] signals for structured feedback
+
+### "Interview Me" Workflow Pattern
+
+For larger or ambiguous features, use a two-session approach to produce better results than a single long session:
+
+1. **Session 1 — Spec**: Ask Claude to use `AskUserQuestion` to interview you about the feature requirements. Claude writes the finalized spec to `SPEC.md`.
+2. **Session 2 — Build**: Start a fresh session and tell Claude to implement from `SPEC.md`.
+
+```markdown
+# Example prompt for Session 1:
+"I want to add a reporting feature. Use AskUserQuestion to interview me about
+the requirements until you have enough detail, then write a complete spec to SPEC.md."
+```
+
+Benefits: the spec session stays focused on requirements; the build session has a clean context and a clear target.
 
 ### Self-Checking Requirements
 Include in Claude.md:
@@ -850,6 +975,27 @@ BOUNDARIES:
 - Consider sub-agent reuse for related tasks in same session
 - Monitor performance impact on complex workflows
 
+#### Worktree Isolation
+
+```bash
+claude --worktree    # start Claude in a new isolated git worktree
+claude -w            # shorthand
+```
+
+Agents also support `isolation: "worktree"` in their definition to always run in an isolated worktree.
+
+#### Background Agents
+
+```yaml
+# In agent definition frontmatter:
+background: true
+model: opus
+```
+
+- `background: true` — agent runs as a background task, non-blocking
+- `model:` — per-agent model selection (`haiku`, `sonnet`, `opus`)
+- List all configured agents: `claude agents`
+
 ### Intelligent Auto-Activation Patterns
 
 Inspired by advanced AI frameworks, implement intelligent sub-agent selection that reduces cognitive load through context-aware automation.
@@ -957,6 +1103,48 @@ Based on Anthropic's research and production implementations, multi-agent system
 - Consider wave-based deployment for managing context limits
 ```
 
+### Hooks
+
+Hooks let you run code in response to Claude Code lifecycle events. Both shell commands and HTTP endpoints are supported.
+
+#### Hook Types
+
+```json
+// Shell hook (existing)
+{
+  "type": "shell",
+  "command": "bash /path/to/script.sh"
+}
+
+// HTTP hook (new)
+{
+  "type": "http",
+  "url": "https://your-server.com/webhook"
+}
+```
+
+HTTP hooks POST JSON to the URL. Useful for logging, notifications, or triggering external systems.
+
+#### Hook Events
+
+| Event | When it fires |
+|-------|--------------|
+| `PreToolUse` | Before any tool is called |
+| `PostToolUse` | After any tool completes |
+| `Stop` | When Claude finishes a response |
+| `WorktreeCreate` | When a new worktree is created |
+| `WorktreeRemove` | When a worktree is removed |
+| `ConfigChange` | When Claude Code config changes |
+| `InstructionsLoaded` | When CLAUDE.md files are loaded |
+
+#### Hook Payload Fields
+All hook events now carry:
+- `agent_id` — identifier for the current agent instance
+- `agent_type` — e.g. `"main"`, `"subagent"`
+- `worktree` — path to the current worktree (if any)
+
+---
+
 ### Sandboxing and Security (October 2025)
 
 Claude Code introduced filesystem and network isolation features that dramatically improve safety while reducing permission friction.
@@ -999,7 +1187,7 @@ Claude Code introduced filesystem and network isolation features that dramatical
 
 # Security Vulnerabilities:
 - CVE-2025-54794 and CVE-2025-54795 patched
-- Update to v0.2.111 (CLI) or v1.0.20 (latest) for security fixes
+- Update to v2.1.69 (latest) for security fixes
 - Sandboxing prevents exploit impact even if vulnerabilities exist
 ```
 
@@ -1016,6 +1204,38 @@ Claude Code introduced filesystem and network isolation features that dramatical
 - Persistent allow-list for trusted domains
 - Prevents prompt injection exfiltration attacks
 ```
+
+### Session Management and CLI Features
+
+#### Cross-Device Session Continuity
+
+```bash
+claude remote-control           # continue most recent session from another device
+claude remote-control my-name   # named session for targeted handoff
+claude --remote                 # start a new web session (accessible from browser/iOS)
+```
+
+- `/teleport` — pull a web or iOS session into your local terminal
+- `/desktop` — hand off a terminal session to the Desktop app for visual diff review
+
+#### Context Management Commands
+
+- `/rewind` (or `Esc+Esc`) — partial compaction from a selected checkpoint; rolls back context without discarding everything
+- `/reload-plugins` — activate pending plugin changes without restarting
+
+#### Voice Mode
+
+```bash
+/voice    # enable voice input (Speech-to-Text)
+```
+- 20 languages supported
+- Shipped 2026-03-03
+
+#### Configuration
+
+- `includeGitInstructions: false` — removes built-in commit/PR workflow instructions from context (useful when you have your own git workflow in CLAUDE.md)
+
+---
 
 ### Web Interface and Deployment Options (October 2025)
 
@@ -1143,6 +1363,85 @@ claude mcp serve
 - Use MCP server mode for remote automation
 ```
 
+### Plugins
+
+Plugins bundle skills, hooks, subagents, and MCP servers into a single installable unit — the package manager for Claude Code capabilities.
+
+#### Plugin Commands
+
+```bash
+/plugin                  # browse and install plugins from the marketplace
+/reload-plugins          # activate changes after installing or updating
+```
+
+#### Plugin Sources
+
+| Source | Example |
+|--------|---------|
+| npm registry | `@org/plugin-name` |
+| Custom npm registry | configured in settings |
+| Git subdirectory | `github.com/org/repo/subdir` (`git-subdir` source type, v2.1.69) |
+
+#### Plugin Features
+
+- Version pinning available (v2.1.51+)
+- Code intelligence plugins available for typed languages (go-to-definition, find-references)
+- Each plugin can contribute skills, hooks, subagents, and MCP server configs simultaneously
+
+#### Enterprise Plugin Settings
+
+```json
+{
+  "pluginTrustMessage": "Plugins must be approved by IT before installation",
+  "allowManagedHooksOnly": true
+}
+```
+
+### LSP Tool (Language Server Protocol)
+
+Claude Code includes an LSP tool that provides code intelligence for typed languages:
+
+- **Go-to-definition** — jump to the source of any symbol
+- **Find-references** — locate all usages across the codebase
+- **Hover docs** — inline documentation without leaving Claude Code
+
+The LSP tool activates automatically for supported languages (TypeScript, Python, Go, Rust, Java, etc.) when a language server is available. No configuration required in most projects.
+
+```markdown
+# Example LSP-powered prompts:
+"Find all callers of the `processPayment` function and check they handle errors correctly"
+"Show me the definition of UserService and all classes that implement it"
+```
+
+### Enterprise and Managed Settings
+
+Deploy org-wide Claude Code settings via OS-native mechanisms:
+
+- **macOS**: plist at `/Library/Preferences/com.anthropic.claude-code.plist`
+- **Windows**: Registry key under `HKLM\SOFTWARE\Anthropic\ClaudeCode`
+
+#### Managed Settings Keys
+
+| Setting | Effect |
+|---------|--------|
+| `allowManagedHooksOnly` | Blocks user-defined hooks; only org-approved hooks run |
+| `pluginTrustMessage` | Custom message shown when a plugin requests trust |
+
+These settings cannot be overridden by users, enabling consistent policy enforcement across teams.
+
+### Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `CLAUDE_CODE_DISABLE_1M_CONTEXT` | Disable the 1M context window |
+| `CLAUDE_CODE_ACCOUNT_UUID` | Provide account UUID synchronously (no auth lookup) |
+| `CLAUDE_CODE_USER_EMAIL` | Provide user email synchronously |
+| `CLAUDE_CODE_ORGANIZATION_UUID` | Provide org UUID synchronously |
+| `ENABLE_CLAUDEAI_MCP_SERVERS` | Set to `false` to disable claude.ai MCP servers |
+| `SLASH_COMMAND_TOOL_CHAR_BUDGET` | Override the character budget for skill descriptions |
+
+---
+
 ### In-Context Learning
 Teach through examples rather than explicit rules:
 
@@ -1181,6 +1480,37 @@ Please help me integrate these features:
 5. Run all tests to ensure nothing is broken
 6. Merge to main and clean up branches when successful
 ```
+
+## Anti-Patterns
+
+Five named failure patterns to recognise and avoid:
+
+### 1. Kitchen Sink Session
+**What it looks like**: Mixing unrelated tasks in a single session — fixing a bug, then adding a feature, then updating docs.
+**Why it fails**: Context becomes polluted with unrelated history; Claude's earlier context influences later decisions incorrectly.
+**Fix**: Use `/clear` between unrelated tasks, or start a new session for each distinct goal.
+
+### 2. Repeated Correction Loop
+**What it looks like**: Correcting Claude on the same issue multiple times within a session.
+**Why it fails**: Each correction adds more instructions to an already-confused context; the contradictions compound.
+**Fix**: `/clear` and rewrite the initial prompt with the correct constraints from the start.
+
+### 3. Over-Specified CLAUDE.md
+**What it looks like**: A CLAUDE.md with 50+ rules covering every edge case.
+**Why it fails**: Important rules get buried; Claude's attention dilutes across too many instructions.
+**Fix**: Ruthless pruning. Apply the test: "Would removing this cause Claude to make mistakes? If not, cut it."
+
+### 4. Trust-Then-Verify Gap
+**What it looks like**: Accepting Claude's output because it looks plausible, without running it.
+**Why it fails**: Claude optimises for plausible-looking output; without a verification step it has no signal that the code actually works.
+**Fix**: Always provide verification criteria upfront (see Verification-First Development). Run the code.
+
+### 5. Infinite Exploration
+**What it looks like**: Asking Claude to "investigate the performance issue" with no scope limit.
+**Why it fails**: Unbounded investigation fills the context window with tangential findings; no actionable result.
+**Fix**: Scope the investigation narrowly ("look only at the database queries in `src/db/`"), or spawn a subagent with a defined output format.
+
+---
 
 ## Quick Reference Checklist
 

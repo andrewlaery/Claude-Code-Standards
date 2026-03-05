@@ -1,19 +1,21 @@
 # Project: [YOUR_PROJECT_NAME]
 
-## AI Development with Claude Sonnet 4.5
-This project leverages Claude Sonnet 4.5 (September 2025) for AI-assisted development:
+## AI Development with Claude Code
+This project leverages Claude Opus 4.6 / Sonnet 4.6 (February 2026) for AI-assisted development:
 
-### Extended Thinking Capabilities
-- **"think" (4K tokens)**: Standard architectural planning, code reviews
-- **"think hard" (10K tokens)**: Security analysis, complex debugging
-- **"ultrathink" (32K tokens)**: Critical migrations, major architectural decisions
-- **Hybrid reasoning**: Instant responses or deep thinking with visible reasoning
+### Adaptive Thinking (Effort Levels)
+- **low**: Quick answers, simple lookups, straightforward tasks
+- **medium**: Standard code reviews, moderate debugging (Opus 4.6 default on Max/Team)
+- **high**: Complex architecture, security analysis, multi-step debugging (Sonnet 4.6 API default)
+- **max** (Opus 4.6 only): Critical migrations, major architectural decisions
+- Use `ultrathink` keyword to force high effort for a single turn
 
 ### Development Approaches
 - **Multi-agent architecture**: Coordinate specialized agents for complex features (90.2% improvement potential)
 - **Test-driven development**: Write tests first, use sub-agents for verification
+- **Verification-first**: Always provide tests, screenshots, or expected outputs as success criteria
 - **Sandboxed execution**: 84% fewer permission prompts with filesystem/network isolation
-- **Web/CLI/IDE flexibility**: Available via terminal, VS Code extension, or web browser
+- **Multi-surface**: Terminal CLI, VS Code extension, Desktop app, web (claude.ai/code), iOS app
 
 ### Quality Enforcement
 - Leverage sub-agents for specialized review: code-reviewer, test-specialist, security-auditor
